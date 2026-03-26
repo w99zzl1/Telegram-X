@@ -34,8 +34,9 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
-          set -euxo pipefail
+          set -uo pipefail
           printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | TERM=xterm ./scripts/setup.sh 2>&1 | tee /home/runner/setup.log
+          SETUP_RC=${PIPESTATUS[1]}
           cat > /home/runner/.tgx_keystore.properties <<'EOF'
           keystore.file=/home/runner/.android/debug.keystore
           keystore.password=android
@@ -54,6 +55,8 @@ jobs:
           tail -n 200 /home/runner/setup.log
           echo "==== ERROR LINES ===="
           grep -i -E "error:|failed|cannot|no such file|not found" /home/runner/setup.log | tail -n 50
+          exit $SETUP_RC
+
 
 
       - name: Build
