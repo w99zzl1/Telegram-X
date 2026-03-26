@@ -7,7 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      TERM: xterm
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
       JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
@@ -22,7 +21,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt update
-          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3 libtinfo5
+          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3 libtinfo6
           git lfs install
 
       - name: Configure
