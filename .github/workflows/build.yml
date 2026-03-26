@@ -98,7 +98,19 @@ jobs:
       - name: Build
         if: success()
         run: |
+          set +e
           ./gradlew assembleLatestUniversalDebug --no-daemon --console=plain
+          RC=$?
+          if [ $RC -ne 0 ]; then
+            echo "Retry after creating tgcalls symlinks"
+            find app/.cxx -type d -name tgvoip -print0 | while IFS= read -r -d '' d; do
+              ln -sfn tgvoip "${d%/tgvoip}/tgcalls"
+            done
+            ./gradlew assembleLatestUniversalDebug --no-daemon --console=plain
+            RC=$?
+          fi
+          exit $RC
+
 
       - name: Upload APK
         if: success()
