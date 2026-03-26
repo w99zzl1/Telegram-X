@@ -6,6 +6,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TERM: xterm
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+      CI: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,7 +22,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt update
-          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3
+          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3 libtinfo5
           git lfs install
 
       - name: Configure
@@ -24,7 +30,7 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
-          export TERM=xterm
+          set -euxo pipefail
           printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | ./scripts/setup.sh
           cat > /home/runner/.tgx_keystore.properties <<'EOF'
           keystore.file=/home/runner/.android/debug.keystore
@@ -34,10 +40,12 @@ jobs:
           EOF
           keytool -genkey -v -keystore /home/runner/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || true
           cat > local.properties <<EOF
-          sdk.dir=/home/runner/Android/Sdk
+          sdk.dir=/usr/local/lib/android/sdk
           telegram.api_id=${TELEGRAM_API_ID}
           telegram.api_hash=${TELEGRAM_API_HASH}
           EOF
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;23.2.8568313" "cmake;3.22.1"
 
       - name: Build
         run: |
