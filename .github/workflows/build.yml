@@ -21,8 +21,13 @@ jobs:
       - name: Install deps
         run: |
           sudo apt update
-          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3 libtinfo6
+          sudo apt install -y \
+            git-lfs unzip zip openjdk-21-jdk python3 \
+            build-essential pkg-config cmake ninja-build \
+            nasm yasm clang lld \
+            zlib1g-dev libssl-dev libstdc++6 libtinfo6
           git lfs install
+
 
       - name: Configure
         env:
