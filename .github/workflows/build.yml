@@ -36,10 +36,11 @@ jobs:
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
           set +e
-          sudo mkdir -p /tests /doc/examples /doc && sudo touch /tests/Makefile /doc/examples/Makefile /doc/Makefile
+          sudo mkdir -p /tests /doc/examples /doc /fftools && sudo touch /tests/Makefile /doc/examples/Makefile /doc/Makefile /fftools/Makefile
           printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | TERM=xterm ./scripts/setup.sh 2>&1 | tee /home/runner/setup.log
           echo "${PIPESTATUS[1]}" > /home/runner/setup.rc
 
+          mkdir -p /home/runner/.android
           cat > /home/runner/.tgx_keystore.properties <<'EOF'
           keystore.file=/home/runner/.android/debug.keystore
           keystore.password=android
@@ -80,6 +81,13 @@ jobs:
         if: always()
         run: |
           test "$(cat /home/runner/setup.rc)" = "0"
+
+      - name: Fix tgcalls symlinks
+        if: success()
+        run: |
+          find app/.cxx -type d -name tgvoip -print0 | while IFS= read -r -d '' d; do
+            ln -sfn tgvoip "${d%/tgvoip}/tgcalls"
+          done
 
       - name: Gradle limits
         if: success()
