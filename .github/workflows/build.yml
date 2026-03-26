@@ -28,7 +28,6 @@ jobs:
             zlib1g-dev libssl-dev libstdc++6 libtinfo6
           git lfs install
 
-
       - name: Configure
         env:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
@@ -61,12 +60,13 @@ jobs:
           echo "==== ERROR LINES ===="
           grep -i -E "error:|failed|cannot|no such file|not found" /home/runner/setup.log | tail -n 50 || true
 
-
       - name: Build
+        if: success()
         run: |
           ./gradlew assembleLatestUniversalDebug --no-daemon --console=plain
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: tgx-latest-debug-apk
