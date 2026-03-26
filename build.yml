@@ -1,0 +1,49 @@
+name: Build TGX Debug
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Install deps
+        run: |
+          sudo apt update
+          sudo apt install -y git-lfs unzip zip openjdk-21-jdk python3
+          git lfs install
+
+      - name: Configure
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+        run: |
+          printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | ./scripts/setup.sh
+          cat > /home/runner/.tgx_keystore.properties <<'EOF'
+          keystore.file=/home/runner/.android/debug.keystore
+          keystore.password=android
+          key.alias=androiddebugkey
+          key.password=android
+          EOF
+          keytool -genkey -v -keystore /home/runner/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || true
+          cat > local.properties <<EOF
+          sdk.dir=/home/runner/Android/Sdk
+          telegram.api_id=${TELEGRAM_API_ID}
+          telegram.api_hash=${TELEGRAM_API_HASH}
+          EOF
+
+      - name: Build
+        run: |
+          ./gradlew assembleLatestUniversalDebug --no-daemon --console=plain
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tgx-latest-debug-apk
+          path: app/build/outputs/apk/**/latest*debug*.apk
