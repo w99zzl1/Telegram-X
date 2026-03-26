@@ -33,10 +33,9 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
-          sudo mkdir -p /tests && sudo touch /tests/Makefile
           sudo mkdir -p /tests /doc/examples /doc && sudo touch /tests/Makefile /doc/examples/Makefile /doc/Makefile
-          printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | TERM=xterm ./scripts/setup.sh
-          SETUP_RC=${PIPESTATUS[1]}
+          printf "org.thunderdog.challegram\nhttps://github.com/TGX-Android/Telegram-X/releases\nhttps://github.com/TGX-Android/Telegram-X\n/home/runner/.tgx_keystore.properties\n" | TERM=xterm ./scripts/setup.sh 2>&1 | tee /home/runner/setup.log
+          SETUP_RC=$?
           cat > /home/runner/.tgx_keystore.properties <<'EOF'
           keystore.file=/home/runner/.android/debug.keystore
           keystore.password=android
